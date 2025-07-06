@@ -1,0 +1,11 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+写代码之前先从agent企业级架构实践目录下文档里学习一下实现方式
+项目具体实现可以参考开源项目autogpt,autogen,langchain,langgraph，openmanus
+每个模块要有独立的readme.md
+开发完一个模块对开发进度更新文档进行一次更新
+
+

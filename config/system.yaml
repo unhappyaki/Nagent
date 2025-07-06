@@ -1,0 +1,198 @@
+# 企业级Agent架构系统配置文件
+system:
+  name: "Enterprise Agent System"
+  version: "1.0.0"
+  environment: "development"  # development, staging, production
+  debug: true
+
+# Agent配置
+agent:
+  max_concurrent: 10
+  timeout: 300  # 秒
+  retry_count: 3
+  default_model: "gpt-4"
+  fallback_model: "gpt-3.5-turbo"
+  
+  # Agent类型配置
+  types:
+    task_agent:
+      model: "gpt-4"
+      max_tokens: 4000
+      temperature: 0.7
+    review_agent:
+      model: "gpt-4"
+      max_tokens: 2000
+      temperature: 0.3
+    writer_agent:
+      model: "gpt-4"
+      max_tokens: 6000
+      temperature: 0.8
+
+# 内存管理配置
+memory:
+  type: "redis"  # redis, postgres, memory
+  ttl: 3600  # 秒
+  max_size: "1GB"
+  
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: ""
+    
+  postgres:
+    host: "localhost"
+    port: 5432
+    database: "agent_system"
+    username: "postgres"
+    password: "password"
+
+# 推理引擎配置
+reasoning:
+  default_strategy: "llm"  # llm, rule, rl, hybrid
+  enable_fallback: true
+  max_iterations: 10
+  
+  llm:
+    provider: "openai"
+    api_key: "sk-9544bab6a54446f29e44c4abbec29f61"
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    
+  rule:
+    rules_path: "config/rules/"
+    
+  rl:
+    model_path: "models/rl/"
+    training_enabled: false
+
+# 通信配置
+communication:
+  acp:
+    host: "0.0.0.0"
+    port: 8000
+    protocol: "http"
+    
+  dispatcher:
+    max_queue_size: 1000
+    worker_count: 4
+    
+  router:
+    enable_load_balancing: true
+    health_check_interval: 30
+
+# 执行配置
+execution:
+  tools:
+    timeout: 60
+    max_retries: 3
+    
+  callbacks:
+    enable_webhooks: true
+    webhook_timeout: 30
+    
+  adapters:
+    default_format: "json"
+    enable_compression: true
+
+# 状态管理配置
+state:
+  session:
+    timeout: 1800  # 30分钟
+    cleanup_interval: 300
+    
+  context:
+    max_history: 100
+    enable_compression: true
+    
+  memory:
+    persistence_interval: 60
+    backup_enabled: true
+
+# 协同配置
+coordination:
+  container:
+    max_agents_per_container: 50
+    resource_limit:
+      cpu: "2.0"
+      memory: "4GB"
+      
+  registry:
+    enable_service_discovery: true
+    heartbeat_interval: 30
+    
+  scheduler:
+    algorithm: "round_robin"  # round_robin, least_loaded, priority
+    enable_priority_queue: true
+
+# 监控配置
+monitoring:
+  enable_tracing: true
+  log_level: "INFO"
+  
+  logging:
+    format: "json"
+    output: "file"  # file, stdout, both
+    file_path: "logs/agent_system.log"
+    max_size: "100MB"
+    backup_count: 5
+    
+  metrics:
+    enable_prometheus: true
+    prometheus_port: 9090
+    collect_interval: 15
+    
+  tracing:
+    provider: "opentelemetry"
+    endpoint: "http://localhost:4317"
+    sample_rate: 0.1
+
+# 安全配置
+security:
+  authentication:
+    enabled: true
+    method: "jwt"  # jwt, oauth2, api_key
+    jwt_secret: "${JWT_SECRET}"
+    jwt_expiry: 3600
+    
+  authorization:
+    enabled: true
+    rbac_enabled: true
+    default_role: "user"
+    
+  audit:
+    enabled: true
+    log_all_actions: true
+    retention_days: 90
+
+# 部署配置
+deployment:
+  mode: "single"  # single, container, microservice
+  
+  container:
+    image: "agent-system:latest"
+    registry: "docker.io"
+    
+  microservice:
+    service_mesh: "istio"
+    load_balancer: "nginx"
+    
+  scaling:
+    auto_scaling: true
+    min_replicas: 2
+    max_replicas: 10
+    target_cpu_utilization: 70
+
+# 模型仓库配置
+model_registry:
+  type: "local"  # local, huggingface, custom
+  local_path: "models/"
+  
+  huggingface:
+    token: "${HF_TOKEN}"
+    cache_dir: "models/hf_cache/"
+    
+  versioning:
+    enabled: true
+    auto_backup: true 
+
+# llm_gateway相关配置已迁移至llm_gateway.yaml 

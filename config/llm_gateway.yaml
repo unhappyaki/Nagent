@@ -1,0 +1,43 @@
+# llm_gateway.yaml
+# 用途：大模型API网关与路由配置，支持多模型分组、智能路由、Token监控等企业级能力
+# 结构说明：
+#   llm_gateway:
+#     oneapi: OneAPI相关配置
+#     routing: 路由策略配置
+#   ...
+# 示例见下方
+llm_gateway:
+  oneapi:
+    enabled: true
+    base_url: "http://127.0.0.1:3000"
+    api_key: "sk-OKZqOKuDk4ZKvJizEa7643E31fA84724BaE2A4Bf8a8fE777"
+    timeout: 60
+    max_retries: 3
+    token_monitoring:
+      enabled: true
+      token_limit_per_user: 100000
+      cost_limit_per_user: 100.0
+      alert_threshold: 0.8
+      context_optimization:
+        enabled: true
+        high_usage_threshold: 0.1
+        auto_optimization: true
+        optimization_strategies:
+          - "reduce_context_length"
+          - "optimize_prompt_templates"
+          - "suggest_cheaper_models"
+    models:
+      premium: ["qwen-max", "qwen-plus", "qwen-coder-plus", "qwen-coder-plus-latest", "qwq-32b-preview", "deepseek-r1", "deepseek-v3"]
+      standard: ["qwen-turbo", "qwen-long", "qwen-mt-plus", "qwen-mt-turbo", "qwen-coder-turbo", "qwen-coder-turbo-latest"]
+      economy: []
+  routing:
+    enabled: true
+    strategy: "cost_performance_balanced"
+    fallback_model: "qwen-turbo"
+    rules:
+      simple_tasks:
+        conditions: ["token_count < 1000", "task_complexity < 0.3"]
+        target_models: ["qwen-turbo", "qwen-mt-turbo", "qwen-coder-turbo"]
+      complex_tasks:
+        conditions: ["token_count > 5000", "task_complexity > 0.8"]
+        target_models: ["qwen-max", "qwen-plus", "deepseek-r1", "qwq-32b-preview"] 
