@@ -11,10 +11,10 @@ from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import structlog
 
-from .acp_server import ACPServer
-from .dispatcher import TaskDispatcher, DispatchStrategy
-from .utils import TimeUtils, ValidationUtils, ConfigUtils
-from .message_schema import ACPMessageBuilder, MessagePriority
+from .protocols.acp.acp_server import ACPServer
+from .protocols.acp.dispatcher import TaskDispatcher, DispatchStrategy
+from .protocols.acp.utils import TimeUtils, ValidationUtils, ConfigUtils
+from .protocols.acp.message_schema import ACPMessageBuilder, MessagePriority
 
 logger = structlog.get_logger(__name__)
 

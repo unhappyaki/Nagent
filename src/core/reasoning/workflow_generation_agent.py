@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
-from communication.adapters.base_adapter import WorkflowDefinition, WorkflowEngineType
+from src.communication.adapters.base_adapter import WorkflowDefinition, WorkflowEngineType
 
 
 @dataclass

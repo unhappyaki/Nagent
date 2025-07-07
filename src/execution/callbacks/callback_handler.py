@@ -16,6 +16,10 @@ from typing import Any, Dict, List, Optional, Callable
 from enum import Enum
 import structlog
 
+from .tool_result import ToolResult
+from .callback_policy import CallbackPolicy
+from .callback_context import CallbackContext
+
 logger = structlog.get_logger(__name__)
 
 
@@ -252,6 +256,62 @@ class CallbackHandler:
                 return await self._handle_fallback_callback(data, context_id, trace_id, error=e, **kwargs)
             
             return result
+    
+    async def handle_callback_with_policy(self, result: ToolResult, context: CallbackContext, policy: CallbackPolicy):
+        """
+        策略驱动的回调处理，支持ToolResult、CallbackContext、CallbackPolicy
+        """
+        callback_id = str(uuid.uuid4())
+        start_time = asyncio.get_event_loop().time()
+        try:
+            self.callback_stats["total_callbacks"] += 1
+            cb_result = CallbackResult(
+                callback_id=callback_id,
+                status=CallbackStatus.EXECUTING
+            )
+            self.callback_results[callback_id] = cb_result
+
+            # 1. 状态锚点：写入memory
+            if policy.write_memory and "memory_write" in self.callbacks:
+                await self.callbacks["memory_write"](
+                    content=result.to_memory_entry(),
+                    memory_type="tool_result",
+                    context_id=context.context_id,
+                    trace_id=context.trace_id,
+                    metadata={"callback_type": "success" if result.success else "error"}
+                )
+            # 2. 审计锚点：写入trace
+            if policy.record_trace and "trace_write" in self.callbacks:
+                await self.callbacks["trace_write"](
+                    event_type="callback_result",
+                    data=result.to_trace_event(),
+                    context_id=context.context_id,
+                    trace_id=context.trace_id
+                )
+            # 3. 链路锚点：状态更新
+            if "status_update" in self.callbacks:
+                await self.callbacks["status_update"](
+                    status="completed" if result.success else "failed",
+                    data=result.to_trace_event(),
+                    context_id=context.context_id
+                )
+            # 4. Fallback
+            if policy.fallback_required:
+                if "fallback_handler" in self.callbacks:
+                    fallback_result = await self.callbacks["fallback_handler"](result, context)
+                    cb_result.status = CallbackStatus.COMPLETED if fallback_result else CallbackStatus.FAILED
+                    cb_result.result = fallback_result
+                    return cb_result
+            # 5. 触发下一步
+            cb_result.status = CallbackStatus.COMPLETED
+            cb_result.result = result.output
+            return cb_result
+        except Exception as e:
+            cb_result.status = CallbackStatus.FAILED
+            cb_result.error = str(e)
+            self.callback_stats["failed_callbacks"] += 1
+            logger.error("Callback with policy failed", callback_id=callback_id, error=str(e))
+            return cb_result
     
     async def _handle_success_callback(
         self,

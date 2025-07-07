@@ -45,7 +45,7 @@ from src.infrastructure.registry.agent_registry import (
 )
 
 # Flask Web服务
-from .app import ACPFlaskApp, create_app
+from ...app import ACPFlaskApp, create_app
 
 # 工具辅助
 from .utils import (
