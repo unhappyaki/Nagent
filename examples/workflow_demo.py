@@ -4,6 +4,9 @@
 展示如何使用工作流生成Agent创建和执行工作流。
 """
 
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
 import asyncio
 import json
 from typing import Dict, Any

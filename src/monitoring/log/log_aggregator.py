@@ -1,3 +1,5 @@
+# 本模块已废弃，推荐统一使用 src.monitoring.log.trace_writer.TraceWriter 进行日志/事件记录。
+# 详见 src/monitoring/log/README.md
 """
 日志聚合器
 

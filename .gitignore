@@ -1,2 +1,8 @@
 src/execution/callbacks/__pycache__
 src/execution/callbacks/__pycache__/callback_handler.cpython-310.pyc
+src/adk/__pycache__/memory.cpython-310.pyc
+src/adk/__pycache__/__init__.cpython-310.pyc
+src/adk/__pycache__/agent_base.cpython-310.pyc
+src/adk/__pycache__/callback.cpython-310.pyc
+src/adk/__pycache__/config.cpython-310.pyc
+src/adk/__pycache__/context.cpython-310.pyc

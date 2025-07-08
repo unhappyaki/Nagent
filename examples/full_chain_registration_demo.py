@@ -3,6 +3,9 @@
 演示：本地Agent注册、A2A协议注册、统一注册中心能力发现
 """
 
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
 import asyncio
 from src.infrastructure.registry.unified_registry import UnifiedModuleRegistry
 from src.communication.protocols.a2a.a2a_types import AgentCard
