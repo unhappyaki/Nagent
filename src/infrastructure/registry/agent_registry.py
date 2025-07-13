@@ -29,6 +29,16 @@ class AgentCapability:
     MULTI_MODAL = "multi_modal"
 
 
+class AgentRegistration:
+    """Agent 注册信息占位实现"""
+    pass
+
+
+class AgentStatus:
+    """Agent 状态占位实现"""
+    pass
+
+
 class AgentRegistry:
     """
     智能体注册器
@@ -501,4 +511,9 @@ class AgentRegistry:
                         return False
             else:
                 return False
+
+
+class ACPAgentRegistry:
+    """ACP Agent 注册中心占位实现"""
+    pass
  

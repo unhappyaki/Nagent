@@ -164,7 +164,12 @@ class ReasoningEngine:
             )
             
             # 尝试备用策略
-            return await self._reason_with_fallback(task, context, memory, available_tools, **kwargs)
+            try:
+                return await self._reason_with_fallback(task, context, memory, available_tools, **kwargs)
+            except Exception as e2:
+                logger.error("Fallback reasoning also failed", error=str(e2))
+                # 始终返回 dict
+                return {"action": {"type": "respond", "parameters": {"response": f"推理失败: {str(e2)}"}}}
     
     def _build_reasoning_context(
         self,
@@ -326,19 +331,16 @@ class ReasoningEngine:
         try:
             reasoning_context = self._build_reasoning_context(task, context, memory, available_tools)
             
-            if self.fallback_strategy == ReasoningStrategy.RULE:
-                result = await self._reason_with_rule(reasoning_context, **kwargs)
-            elif self.fallback_strategy == ReasoningStrategy.LLM:
+            if self.fallback_strategy == ReasoningStrategy.LLM:
                 result = await self._reason_with_llm(reasoning_context, **kwargs)
+            elif self.fallback_strategy == ReasoningStrategy.RULE:
+                result = await self._reason_with_rule(reasoning_context, **kwargs)
+            elif self.fallback_strategy == ReasoningStrategy.RL:
+                result = await self._reason_with_rl(reasoning_context, **kwargs)
+            elif self.fallback_strategy == ReasoningStrategy.HYBRID:
+                result = await self._reason_with_hybrid(reasoning_context, **kwargs)
             else:
-                # 最后的备用方案：返回默认动作
-                result = {
-                    "action": "default_action",
-                    "parameters": {},
-                    "confidence": 0.1,
-                    "reasoning": "Fallback to default action due to reasoning failure",
-                    "strategy": "fallback"
-                }
+                raise ValueError(f"不支持的备用推理策略: {self.fallback_strategy}")
             
             self.stats["strategy_usage"][self.fallback_strategy.value] += 1
             
@@ -347,14 +349,8 @@ class ReasoningEngine:
         except Exception as e:
             logger.error("Fallback reasoning also failed", error=str(e))
             
-            # 返回错误结果
-            return {
-                "action": "error",
-                "parameters": {"error": str(e)},
-                "confidence": 0.0,
-                "reasoning": f"Reasoning failed: {str(e)}",
-                "strategy": "error"
-            }
+            # 始终返回 dict
+            return {"action": {"type": "respond", "parameters": {"response": f"推理失败: {str(e)}"}}}
     
     def get_stats(self) -> Dict[str, Any]:
         """获取统计信息"""

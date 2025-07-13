@@ -20,11 +20,11 @@ from dataclasses import dataclass, field
 from pydantic import BaseModel, Field
 import structlog
 
-from ...state.context import Context
-from ...state.memory import Memory
-from ...core.reasoning import ReasoningEngine
-from ...core.tools import ToolRegistry
-from ...monitoring.tracing import TraceManager
+from src.state.context import Context
+from src.state.memory import Memory
+from src.core.reasoning.reasoning_engine import ReasoningEngine
+from src.core.tools.tool_registry import LocalToolRegistry
+from src.monitoring.tracing.trace_writer import TraceWriter
 
 
 logger = structlog.get_logger(__name__)
@@ -143,8 +143,8 @@ class BaseAgent(ABC):
             max_tokens=config.max_tokens,
             temperature=config.temperature
         )
-        self.tool_registry = ToolRegistry()
-        self.trace_manager = TraceManager(agent_id=self.agent_id)
+        self.tool_registry = LocalToolRegistry()
+        self.trace_manager = TraceWriter()
         
         # 统计信息
         self.stats = {
@@ -437,19 +437,17 @@ class BaseAgent(ABC):
     async def _reason(self, task: str, **kwargs) -> Dict[str, Any]:
         """
         推理决策
-        
-        Args:
-            task: 任务描述
-            **kwargs: 额外参数
-            
-        Returns:
-            推理结果
         """
         try:
             # 构建推理上下文
             context_data = await self.context.get_context()
-            memory_data = await self.memory.get_relevant_memories(task)
-            
+            # 获取 context_id，若无则用 'default'
+            context_id = None
+            if context_data and isinstance(context_data, list) and len(context_data) > 0:
+                context_id = context_data[-1].get("context_id")
+            if not context_id:
+                context_id = "default"
+            memory_data = await self.memory.get_relevant_memories(task, context_id)
             # 执行推理
             result = await self.reasoning_engine.reason(
                 task=task,
@@ -457,58 +455,43 @@ class BaseAgent(ABC):
                 memory=memory_data,
                 **kwargs
             )
-            
             return result
-            
         except Exception as e:
             logger.error("Reasoning failed", agent_id=self.agent_id, task=task, error=str(e))
-            raise
+            # 返回兼容结构，防止后续 KeyError
+            return {"action": {"type": "respond", "parameters": {"response": f"推理失败: {str(e)}"}}}
     
     async def _execute(self, reasoning_result: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """
         执行动作
-        
-        Args:
-            reasoning_result: 推理结果
-            **kwargs: 额外参数
-            
-        Returns:
-            执行结果
         """
         try:
             action = reasoning_result.get("action")
-            if not action:
-                raise ValueError("No action specified in reasoning result")
-            
+            if not action or not (isinstance(action, dict) and "type" in action):
+                # 兜底，保证 action 一定有 type 字段
+                action = {"type": "respond", "parameters": {"response": "没有可执行的动作。"}}
+            # --- 兼容 action 为字符串的情况 ---
+            if isinstance(action, str):
+                action = {"type": action}
             # 检查是否需要工具调用
             if action.get("type") == "tool_call":
                 tool_name = action.get("tool_name")
                 tool_params = action.get("parameters", {})
-                
-                # 获取工具
                 tool = self.tool_registry.get_tool(tool_name)
                 if not tool:
                     raise ValueError(f"Tool {tool_name} not found")
-                
-                # 执行工具
                 result = await tool.execute(tool_params)
-                
             elif action.get("type") == "delegate":
-                # 委托给其他Agent
                 target_agent = action.get("target_agent")
                 delegated_task = action.get("task")
                 result = await self._delegate_task(target_agent, delegated_task, **kwargs)
-                
             else:
-                # 默认动作
                 result = {"message": action.get("message", "Action completed")}
-            
             return {
                 "action": action,
                 "result": result,
                 "timestamp": datetime.utcnow().isoformat()
             }
-            
         except Exception as e:
             logger.error("Execution failed", agent_id=self.agent_id, error=str(e))
             raise
@@ -516,21 +499,23 @@ class BaseAgent(ABC):
     async def _update_state(self, execution_result: Dict[str, Any]) -> None:
         """
         更新状态
-        
-        Args:
-            execution_result: 执行结果
         """
         try:
+            # 获取 context_id，优先从 execution_result、否则 default
+            context_id = None
+            if execution_result and isinstance(execution_result, dict):
+                context_id = execution_result.get("context_id")
+            if not context_id:
+                context_id = "default"
             # 更新内存
             await self.memory.add_memory(
                 content=str(execution_result),
                 memory_type="execution_result",
+                context_id=context_id,
                 metadata={"timestamp": datetime.utcnow().isoformat()}
             )
-            
             # 更新上下文
             await self.context.add_message("agent", str(execution_result))
-            
         except Exception as e:
             logger.error("State update failed", agent_id=self.agent_id, error=str(e))
             raise

@@ -21,23 +21,56 @@ class SimpleMemoryEngine:
 # 1. 定义一个简单的工具（加法器）
 class AddTool(BaseTool):
     def __init__(self):
-        super().__init__(name="add", description="加法工具", permissions=["math:add"])
+        super().__init__(name="add", description="加法工具")
+        self.permissions = ["math:add"]
 
     def run(self, payload, context=None):
         a = payload.get("a", 0)
         b = payload.get("b", 0)
         return {"success": True, "result": a + b}
 
+    async def execute(self, **kwargs):
+        # 兼容 BaseTool 抽象方法
+        payload = kwargs.get("payload", {})
+        context = kwargs.get("context", None)
+        return self.run(payload, context)
+
+# 替换 ToolExecutor 为 DemoToolExecutor
+class DemoToolExecutor:
+    def __init__(self, tool_registry, trace_writer, callback_handler):
+        self.tool_registry = tool_registry
+        self.trace_writer = trace_writer
+        self.callback_handler = callback_handler
+    def execute(self, action, context, trace_id):
+        tool_name = action["tool"]
+        args = action.get("args", {})
+        tool = self.tool_registry.get_tool(tool_name)
+        if not tool:
+            raise Exception(f"Tool {tool_name} not found")
+        result = tool(args, context)
+        # 记录 trace
+        self.trace_writer.record_event(trace_id, "TOOL_EXEC", {"tool": tool_name, "args": args, "result": result})
+        # 记录 memory（模拟）
+        if hasattr(self.callback_handler, "agent_id"):
+            # 仅演示，实际应调用 callback
+            pass
+        return result
+
 # 2. 初始化各核心模块
 trace_writer = TraceWriter()
 memory_engine = SimpleMemoryEngine()
 tool_registry = LocalToolRegistry()
-callback_handler = CallbackHandler(memory_engine, trace_writer)
-tool_executor = ToolExecutor(tool_registry, trace_writer, callback_handler)
+callback_handler = CallbackHandler(agent_id="demo_agent")
+tool_executor = DemoToolExecutor(tool_registry, trace_writer, callback_handler)
 
 # 3. 注册工具
 add_tool = AddTool()
-tool_registry.register(add_tool)
+# tool_registry.register(add_tool)
+tool_registry.register_tool(
+    name=add_tool.name,
+    tool_func=add_tool.run,
+    description=add_tool.description
+)
 
 # 4. 构造 Reasoner 输出的 action
 trace_id = f"trace_{int(time.time())}"

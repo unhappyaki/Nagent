@@ -74,6 +74,10 @@ class TraceWriter:
         self.max_entries = 10000
         self.auto_cleanup = True
     
+    async def initialize(self):
+        """兼容框架的初始化流程，实际可为空实现"""
+        pass
+    
     def record_trace(self,
                     trace_id: str,
                     context_id: str,
@@ -492,3 +496,10 @@ class TraceWriter:
             "oldest_entry": min([entry.timestamp for entry in self.trace_entries]) if self.trace_entries else 0,
             "newest_entry": max([entry.timestamp for entry in self.trace_entries]) if self.trace_entries else 0
         } 
+
+    async def start_trace(self, trace_id, task):
+        """兼容追踪调用，空实现"""
+        pass
+    async def end_trace(self, trace_id, execution_result):
+        """兼容追踪调用，空实现"""
+        pass 

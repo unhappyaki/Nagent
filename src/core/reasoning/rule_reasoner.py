@@ -93,6 +93,10 @@ class RuleReasoner:
                 "strategy": "rule"
             }
     
+    async def initialize(self):
+        """兼容框架的初始化流程，实际可为空实现"""
+        pass
+    
     def _load_default_rules(self) -> List[Dict[str, Any]]:
         """加载默认规则"""
         return [

@@ -1,7 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-from adk import AgentBase, AgentRegistry, RuntimeExecutor, log
+from src.adk import AgentBase, AgentRegistry, RuntimeExecutor, log
 
 # 1. 定义安全智能体
 class ThreatDetectorAgent(AgentBase):

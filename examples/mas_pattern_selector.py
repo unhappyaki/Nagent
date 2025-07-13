@@ -6,9 +6,11 @@
 
 import asyncio
 import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from typing import Dict, Any, List, Callable
 
-from mas_cooperation_patterns_demo import MASCooperationPatternsDemo, SecurityAgent, AgentType
+from examples.mas_cooperation_patterns_demo import MASCooperationPatternsDemo, SecurityAgent, AgentType
 
 
 class DebatePatternAgent(SecurityAgent):
@@ -53,14 +55,14 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
     
     def display_menu(self):
         """显示选择菜单"""
-        print("\n🔐 MAS协作模式演示器")
+        print("\nMAS协作模式演示器")
         print("=" * 50)
         print("请选择要演示的协作模式:")
         print()
         
         for key, (name, _) in self.available_patterns.items():
             if key == "8":
-                print(f"  {key}. 🎉 {name}")
+                print(f"  {key}. {name}")
             else:
                 print(f"  {key}. {name}")
         
@@ -69,7 +71,7 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
     
     async def demonstrate_master_slave_pattern(self):
         """演示主从层次模式"""
-        print("\n👑 主从层次模式(类Manus模式)")
+        print("\n主从层次模式(类Manus模式)")
         print("-" * 40)
         
         coordinator = self.security_agents["security_coordinator"]
@@ -80,10 +82,10 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
             "components": ["网络基础设施", "应用系统", "数据安全", "合规检查"]
         }
         
-        print(f"🎯 任务: {assessment_task['description']}")
+        print(f"任务: {assessment_task['description']}")
         
         # 协调者分配任务
-        print("\n👑 协调者分配子任务:")
+        print("\n协调者分配子任务:")
         subtasks = [
             ("threat_detector", "网络威胁扫描"),
             ("vuln_assessor", "漏洞评估分析"),
@@ -94,22 +96,22 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
         results = []
         for agent_key, task_desc in subtasks:
             agent = self.security_agents[agent_key]
-            print(f"  📤 分配给 {agent.agent_type.value}: {task_desc}")
+            print(f"  分配给 {agent.agent_type.value}: {task_desc}")
             
             result = await agent.process_task({
                 "description": task_desc,
                 "context": assessment_task
             })
             results.append(result)
-            print(f"    ✅ 完成，置信度: {result['confidence']:.2f}")
+            print(f"    完成，置信度: {result['confidence']:.2f}")
         
         # 协调者汇总
-        print(f"\n👑 协调者汇总 {len(results)} 个子任务结果")
-        print("✅ 主从模式演示完成")
+        print(f"\n协调者汇总 {len(results)} 个子任务结果")
+        print("主从模式演示完成")
     
     async def demonstrate_reflection_pattern(self):
         """演示反思模式"""
-        print("\n🔄 反思模式(二人转)")
+        print("\n反思模式(二人转)")
         print("-" * 40)
         
         executor = self.security_agents["vuln_assessor"]
@@ -120,30 +122,30 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
             "attack_vector": "未知恶意软件样本"
         }
         
-        print(f"🎯 任务: {task['description']}")
-        print("🔄 执行-反思循环:")
+        print(f"任务: {task['description']}")
+        print("执行-反思循环:")
         
         for i in range(2):  # 简化为2轮
             print(f"\n  第{i+1}轮:")
             
             # 执行者分析
-            print(f"  🎬 {executor.agent_type.value} 执行分析")
+            print(f"  {executor.agent_type.value} 执行分析")
             exec_result = await executor.process_task(task)
             print(f"    结果: {exec_result['task_result'][:40]}...")
             
             # 反思者评估
-            print(f"  🤔 {reflector.agent_type.value} 进行反思")
+            print(f"  {reflector.agent_type.value} 进行反思")
             reflection = await reflector.process_task({
                 "description": "反思分析结果的完整性",
                 "execution_result": exec_result
             })
             print(f"    反思: {reflection['task_result'][:40]}...")
         
-        print("✅ 反思模式演示完成")
+        print("反思模式演示完成")
     
     async def demonstrate_debate_pattern(self):
         """演示辩论模式"""
-        print("\n🗣️ 辩论模式(多专家决策)")
+        print("\n辩论模式(多专家决策)")
         print("-" * 40)
         
         # 决策场景
@@ -158,8 +160,8 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
             self.security_agents["forensics_analyst"]
         ]
         
-        print(f"🎯 决策问题: {decision['question']}")
-        print("🗣️ 专家观点:")
+        print(f"决策问题: {decision['question']}")
+        print("专家观点:")
         
         opinions = []
         for expert in experts:
@@ -178,12 +180,12 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
             "decision_context": decision
         })
         
-        print(f"\n⚖️ 最终决策: {final_decision['task_result'][:60]}...")
-        print("✅ 辩论模式演示完成")
+        print(f"\n最终决策: {final_decision['task_result'][:60]}...")
+        print("辩论模式演示完成")
     
     async def demonstrate_group_chat_pattern(self):
         """演示群聊模式"""
-        print("\n💬 群聊模式(专家圆桌)")
+        print("\n群聊模式(专家圆桌)")
         print("-" * 40)
         
         topic = "如何应对零日漏洞威胁"
@@ -193,8 +195,8 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
             self.security_agents["incident_responder"]
         ]
         
-        print(f"💬 讨论主题: {topic}")
-        print("🗣️ 群聊讨论:")
+        print(f"讨论主题: {topic}")
+        print("群聊讨论:")
         
         for i, participant in enumerate(participants):
             message = await participant.process_task({
@@ -203,11 +205,11 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
             })
             print(f"  [{participant.agent_type.value}]: {message['task_result'][:50]}...")
         
-        print("✅ 群聊模式演示完成")
+        print("群聊模式演示完成")
     
     async def demonstrate_selected_patterns(self):
         """演示选定的模式"""
-        print("\n🎉 开始基础模式演示")
+        print("\n开始基础模式演示")
         print("=" * 50)
         
         patterns_to_demo = [
@@ -220,16 +222,16 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
         
         for i, (pattern_id, demo_func) in enumerate(patterns_to_demo):
             pattern_name = self.available_patterns[pattern_id][0]
-            print(f"\n🔄 [{i+1}/{len(patterns_to_demo)}] {pattern_name}")
+            print(f"\n[{i+1}/{len(patterns_to_demo)}] {pattern_name}")
             await demo_func()
             if i < len(patterns_to_demo) - 1:
                 await asyncio.sleep(0.5)  # 间隔
         
-        print("\n🎉 基础模式演示完成!")
+        print("\n基础模式演示完成!")
     
     async def run_interactive_demo(self):
         """运行交互式演示"""
-        print("🔐 欢迎使用MAS协作模式演示器")
+        print("欢迎使用MAS协作模式演示器")
         print("基于阿里安全部多智能体协作方式研究")
         
         while True:
@@ -239,23 +241,23 @@ class InteractiveMASPatternsDemo(MASCooperationPatternsDemo):
                 choice = input("\n请选择模式 (0-8): ").strip()
                 
                 if choice == "0":
-                    print("👋 感谢使用，再见!")
+                    print("感谢使用，再见!")
                     break
                 
                 if choice in self.available_patterns:
                     pattern_name, demo_func = self.available_patterns[choice]
-                    print(f"\n🚀 开始演示: {pattern_name}")
+                    print(f"\n开始演示: {pattern_name}")
                     await demo_func()
                     
                     input("\n按Enter键继续...")
                 else:
-                    print("❌ 无效选择，请重新输入")
+                    print("无效选择，请重新输入")
                     
             except KeyboardInterrupt:
-                print("\n\n👋 用户中断，退出演示器")
+                print("\n\n用户中断，退出演示器")
                 break
             except Exception as e:
-                print(f"❌ 发生错误: {str(e)}")
+                print(f"发生错误: {str(e)}")
                 continue
 
 
@@ -265,9 +267,9 @@ def main():
         demo = InteractiveMASPatternsDemo()
         asyncio.run(demo.run_interactive_demo())
     except KeyboardInterrupt:
-        print("\n👋 退出演示")
+        print("\n退出演示")
     except Exception as e:
-        print(f"❌ 程序错误: {str(e)}")
+        print(f"程序错误: {str(e)}")
 
 
 if __name__ == "__main__":

@@ -108,14 +108,28 @@ class LLMReasoner:
             
             self.stats["successful_calls"] += 1
             
-            logger.debug(
-                "LLM reasoning completed",
-                task=task,
-                action=result.get("action"),
-                confidence=result.get("confidence")
-            )
-            
-            return result
+            # --- 修正 action 字段结构 ---
+            action_type = result.get("action", "respond")
+            action_dict = {"type": action_type}
+            # 工具调用等特殊参数
+            if action_type == "tool_call":
+                params = result.get("parameters", {})
+                if "tool_name" in params:
+                    action_dict["tool_name"] = params["tool_name"]
+                if "tool_params" in params:
+                    action_dict["parameters"] = params["tool_params"]
+                else:
+                    action_dict["parameters"] = params
+            elif action_type == "respond":
+                action_dict["parameters"] = result.get("parameters", {})
+            else:
+                action_dict["parameters"] = result.get("parameters", {})
+            return {
+                "action": action_dict,
+                "confidence": result.get("confidence", 0.5),
+                "reasoning": result.get("reasoning", ""),
+                "strategy": result.get("strategy", "llm")
+            }
             
         except Exception as e:
             self.stats["failed_calls"] += 1
@@ -128,14 +142,15 @@ class LLMReasoner:
             
             # 返回默认响应
             return {
-                "action": "respond",
-                "parameters": {
-                    "response": f"我理解您的任务：{task}。我正在处理中。"
-                },
+                "action": {"type": "respond", "parameters": {"response": f"我理解您的任务：{task}。我正在处理中。"}},
                 "confidence": 0.5,
                 "reasoning": f"LLM推理失败，使用默认响应: {str(e)}",
                 "strategy": "llm"
             }
+    
+    async def initialize(self):
+        """兼容框架的初始化流程，实际可为空实现"""
+        pass
     
     def _build_prompt(
         self,

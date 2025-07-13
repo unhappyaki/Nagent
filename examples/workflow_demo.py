@@ -11,11 +11,11 @@ import asyncio
 import json
 from typing import Dict, Any
 
-from src.workflow.generation.workflow_generation_agent import (
+from src.core.reasoning.workflow_generation_agent import (
     WorkflowGenerationAgent,
     LLMConfig
 )
-from src.workflow.adapters.base_adapter import WorkflowEngineType
+from src.communication.adapters.base_adapter import WorkflowEngineType
 
 
 async def demo_workflow_generation():

@@ -16,11 +16,11 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-from src.core.agent import BaseAgent, AgentConfig, AgentType, AgentMessage
-from src.core.reasoning import ReasoningEngine, ReasoningStrategy
+from src.core.agent.base_agent import BaseAgent, AgentConfig, AgentType, AgentMessage
+from src.core.reasoning.reasoning_engine import ReasoningEngine, ReasoningStrategy
 from src.state.context import Context
 from src.state.memory import Memory
-from src.core.tools import LocalToolRegistry
+from src.core.tools.tool_registry import LocalToolRegistry
 
 
 class TaskAgent(BaseAgent):
@@ -83,7 +83,7 @@ async def main():
             
             # 显示结果
             if result["success"]:
-                print(f"✅ 任务执行成功")
+                print(f"任务执行成功")
                 print(f"   执行时间: {result.get('execution_time', 0):.2f}秒")
                 print(f"   追踪ID: {result.get('trace_id', 'N/A')}")
                 
@@ -99,18 +99,18 @@ async def main():
                     print(f"   响应内容: {response}")
                 
             else:
-                print(f"❌ 任务执行失败")
+                print(f"任务执行失败")
                 print(f"   错误信息: {result.get('error', 'Unknown error')}")
                 
         except Exception as e:
-            print(f"❌ 任务执行异常: {str(e)}")
+            print(f"任务执行异常: {str(e)}")
     
     # 5. 获取Agent状态
     print("\n5. 获取Agent状态...")
     status = await agent.get_status()
     print(f"Agent ID: {status['agent_id']}")
     print(f"Agent名称: {status['name']}")
-    print(f"Agent类型: {status['type']}")
+    print(f"Agent类型: {status['agent_type']}")
     print(f"当前状态: {status['status']}")
     print(f"创建时间: {status['created_at']}")
     print(f"最后活跃: {status['last_active']}")

@@ -1,6 +1,6 @@
 import sys, os, asyncio
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from adk import AgentBase, AgentRegistry, RuntimeExecutor, log
+from src.adk import AgentBase, AgentRegistry, RuntimeExecutor, log
 from concurrent.futures import ThreadPoolExecutor
 
 # 1. ReACT Agent模式
@@ -143,7 +143,7 @@ def async_group_chat_demo():
         loop = asyncio.get_event_loop()
         tasks = [loop.run_in_executor(None, agent.on_task, "chat", "异步群聊") for agent in agents]
         return await asyncio.gather(*tasks)
-    responses = asyncio.get_event_loop().run_until_complete(async_group_chat())
+    responses = asyncio.run(async_group_chat())
     print("[异步群聊模式]", responses)
 
 # 9. 动态智能体添加模式

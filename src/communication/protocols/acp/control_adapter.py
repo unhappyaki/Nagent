@@ -279,42 +279,41 @@ class ControlDispatcher:
         try:
             # 从载荷中提取动作类型
             action_type = acp_payload.data.get("action_type", "")
-            
+            # 兼容新版 trace_id、context_id、timestamp
+            meta = getattr(acp_payload, 'metadata', {}) or {}
+            trace_id = meta.get('trace_id')
+            context_id = meta.get('context_id')
+            timestamp = meta.get('timestamp')
             # 查找匹配的适配器
             for adapter in self.adapters:
                 if adapter.match(action_type):
                     # 记录trace
                     if self.trace_writer:
                         self.trace_writer.record_acp_message(
-                            trace_id=acp_payload.trace_id,
-                            context_id=acp_payload.context_id,
+                            trace_id=trace_id,
+                            context_id=context_id,
                             message_type="control_dispatch",
                             payload={"action_type": action_type, "adapter": adapter.__class__.__name__}
                         )
-                    
                     # 执行控制
                     result = await adapter.execute(acp_payload)
-                    
                     # 记录结果trace
                     if self.trace_writer:
                         self.trace_writer.record_acp_message(
-                            trace_id=acp_payload.trace_id,
-                            context_id=acp_payload.context_id,
+                            trace_id=trace_id,
+                            context_id=context_id,
                             message_type="control_result",
                             payload={"status": result.status, "output": result.output}
                         )
-                    
                     return result
-            
             # 没有找到匹配的适配器
             error_msg = f"没有找到支持动作类型 {action_type} 的适配器"
             self.logger.error(error_msg)
-            
             return ControlResult(
-                control_id=acp_payload.trace_id,
+                control_id=trace_id,
                 status="error",
                 output={},
-                trace={"timestamp": acp_payload.timestamp},
+                trace={"timestamp": timestamp},
                 error_message=error_msg
             )
             

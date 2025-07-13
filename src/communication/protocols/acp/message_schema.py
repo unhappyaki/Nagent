@@ -31,6 +31,7 @@ class ACPMessageType(Enum):
 
 class ACPCommandType(Enum):
     """ACP命令类型"""
+    CALL = "call"  # 兼容 demo
     CALL_TOOL = "call_tool"               # 工具调用
     CALL_API = "call_api"                 # API调用
     CALL_MODEL = "call_model"             # 模型调用

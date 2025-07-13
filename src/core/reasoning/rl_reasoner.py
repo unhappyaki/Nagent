@@ -116,6 +116,10 @@ class RLReasoner:
                 "strategy": "rl"
             }
     
+    async def initialize(self):
+        """兼容框架的初始化流程，实际可为空实现"""
+        pass
+    
     def _build_state(
         self,
         task: str,

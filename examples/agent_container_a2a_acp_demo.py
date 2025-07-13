@@ -1,3 +1,5 @@
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 import asyncio
 from src.infrastructure.registry.unified_registry import UnifiedModuleRegistry
 from src.communication.protocols.a2a.a2a_types import AgentCard
@@ -20,10 +22,10 @@ async def main():
     config = ContainerConfig(
         agent_id="agent-001",
         agent_type="demo",
-        agent_card=agent_card,
-        acp_config={"host": "localhost", "port": 8000},
         environment={}
     )
+    config.agent_card = agent_card
+    config.acp_config = {"host": "localhost", "port": 8000}
 
     # 2. 启动AgentContainer（注册A2A能力并启动ACPServer）
     container = AgentContainer("container-001", config, registry)

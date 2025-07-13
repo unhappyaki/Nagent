@@ -22,6 +22,9 @@ import uuid
 from typing import Dict, Any, List, Optional
 from enum import Enum
 from dataclasses import dataclass
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+from src.adk import BIRRouter, TaskScheduler, ServiceRegistry, ContainerManager, AgentGovernanceManager
 
 # 模拟导入框架核心模块
 class MockBIRRouter:
@@ -107,7 +110,7 @@ class MASCooperationPatternsDemo:
         """初始化演示环境"""
         self.setup_infrastructure()
         self.setup_security_agents()
-        print("🔐 MAS协作模式演示初始化完成")
+        print("MAS协作模式演示初始化完成")
     
     def setup_infrastructure(self):
         """设置基础设施"""
@@ -160,7 +163,7 @@ class MASCooperationPatternsDemo:
     async def demonstrate_react_agent_pattern(self):
         """演示ReACT Agent模式"""
         print("\n" + "="*60)
-        print("🤖 1. ReACT Agent模式演示")
+        print("1. ReACT Agent模式演示")
         print("="*60)
         
         agent = self.security_agents["threat_detector"]
@@ -173,15 +176,15 @@ class MASCooperationPatternsDemo:
             timestamp=time.time()
         )
         
-        print(f"🎯 安全事件: {incident.description}")
-        print("🔄 ReACT循环处理:")
+        print(f"安全事件: {incident.description}")
+        print("ReACT循环处理:")
         
         # ReACT: Reason -> Act -> Observe 循环
         for cycle in range(3):
-            print(f"\n  🧠 循环 {cycle + 1}:")
+            print(f"\n  循环 {cycle + 1}:")
             
             # Reason: 分析当前状态
-            print(f"    💭 推理: 分析恶意软件特征和影响范围")
+            print(f"    推理: 分析恶意软件特征和影响范围")
             
             # Act: 执行行动
             action_task = {
@@ -190,19 +193,19 @@ class MASCooperationPatternsDemo:
                 "cycle": cycle
             }
             result = await agent.process_task(action_task)
-            print(f"    🎬 行动: {result['task_result']}")
+            print(f"    行动: {result['task_result']}")
             
             # Observe: 观察结果
-            print(f"    👀 观察: 置信度 {result['confidence']:.2f}, 发现 {len(result['recommendations'])} 个建议")
+            print(f"    观察: 置信度 {result['confidence']:.2f}, 发现 {len(result['recommendations'])} 个建议")
             
             await asyncio.sleep(0.1)
         
-        print(f"✅ ReACT模式完成，Agent记忆中有 {len(agent.memory)} 条记录")
+        print(f"ReACT模式完成，Agent记忆中有 {len(agent.memory)} 条记录")
     
     async def demonstrate_routing_pattern(self):
         """演示路由模式"""
         print("\n" + "="*60)
-        print("🛣️  2. 路由模式演示")
+        print("2. 路由模式演示")
         print("="*60)
         
         # 不同类型的安全请求
@@ -213,7 +216,7 @@ class MASCooperationPatternsDemo:
             {"type": "compliance_check", "description": "执行季度合规性检查"}
         ]
         
-        print("🎯 智能路由安全请求到专业Agent:")
+        print("智能路由安全请求到专业Agent:")
         
         for request in security_requests:
             # 路由决策
@@ -228,21 +231,21 @@ class MASCooperationPatternsDemo:
             else:
                 target_agent = self.security_agents["security_coordinator"]
             
-            print(f"\n  📋 请求: {request['description']}")
-            print(f"  🎯 路由到: {target_agent.agent_id} ({target_agent.agent_type.value})")
+            print(f"\n  请求: {request['description']}")
+            print(f"  路由到: {target_agent.agent_id} ({target_agent.agent_type.value})")
             
             # 执行任务
             result = await target_agent.process_task(request)
-            print(f"  ✅ 结果: {result['task_result'][:50]}...")
+            print(f"  结果: {result['task_result'][:50]}...")
             
             await asyncio.sleep(0.1)
         
-        print("✅ 路由模式演示完成")
+        print("路由模式演示完成")
     
     async def demonstrate_sequential_pattern(self):
         """演示简单顺序模式/狼人杀模式"""
         print("\n" + "="*60)
-        print("🔄 3. 顺序协作模式演示 (安全事件响应流程)")
+        print("3. 顺序协作模式演示 (安全事件响应流程)")
         print("="*60)
         
         incident = SecurityIncident(
@@ -264,16 +267,16 @@ class MASCooperationPatternsDemo:
             ("security_coordinator", "总结和后续行动计划")
         ]
         
-        print(f"🚨 处理安全事件: {incident.description}")
-        print("📋 按标准流程顺序执行:")
+        print(f"处理安全事件: {incident.description}")
+        print("按标准流程顺序执行:")
         
         context = {"incident": incident.__dict__, "previous_results": []}
         
         for i, (agent_key, task_description) in enumerate(response_sequence):
             agent = self.security_agents[agent_key]
             
-            print(f"\n  🏃 步骤 {i+1}: {agent.agent_type.value}")
-            print(f"    📝 任务: {task_description}")
+            print(f"\n  步骤 {i+1}: {agent.agent_type.value}")
+            print(f"    任务: {task_description}")
             
             # 每个Agent都能看到前面的结果
             task = {
@@ -285,16 +288,16 @@ class MASCooperationPatternsDemo:
             result = await agent.process_task(task)
             context["previous_results"].append(result)
             
-            print(f"    ✅ 完成: {result['task_result'][:60]}...")
+            print(f"    完成: {result['task_result'][:60]}...")
             
             await asyncio.sleep(0.1)
         
-        print(f"\n✅ 顺序协作完成，共 {len(context['previous_results'])} 个步骤")
+        print(f"\n顺序协作完成，共 {len(context['previous_results'])} 个步骤")
 
 
 async def main():
     """主演示函数"""
-    print("🔐 多智能体系统(MAS)协作模式演示")
+    print("多智能体系统(MAS)协作模式演示")
     print("基于阿里安全部探索的多智能体协作方式")
     print("=" * 60)
     
@@ -306,9 +309,9 @@ async def main():
     await demo.demonstrate_sequential_pattern()
     
     print("\n" + "="*60)
-    print("🎉 基础MAS协作模式演示完成!")
-    print("💡 Nagent框架支持企业级多智能体协作")
-    print("🔐 特别适合安全场景的虚拟专家团队构建")
+    print("基础MAS协作模式演示完成!")
+    print("Nagent框架支持企业级多智能体协作")
+    print("特别适合安全场景的虚拟专家团队构建")
     print("=" * 60)
 
 

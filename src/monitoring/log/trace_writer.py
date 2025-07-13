@@ -16,6 +16,17 @@ class TraceWriter:
     def get_events(self, trace_id):
         return self._events.get(trace_id, [])
 
+    async def initialize(self):
+        """兼容框架的初始化流程，实际可为空实现"""
+        pass
+
+    async def start_trace(self, trace_id, task):
+        """兼容追踪调用，空实现"""
+        pass
+    async def end_trace(self, trace_id, execution_result):
+        """兼容追踪调用，空实现"""
+        pass
+
 _trace_writer_instance = None
 
 def get_trace_writer():

@@ -21,8 +21,8 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.communication.dispatcher.bir_router import BIRRouter, BehaviorPackage
-from src.communication.acp.acp_client import ACPClient
-from src.monitoring.tracing import TraceWriter
+from src.communication.protocols.acp.acp_client import ACPClient
+from src.monitoring.tracing.trace_writer import TraceWriter
 from src.state.context import Context
 
 
@@ -77,7 +77,7 @@ class UserInstructionFlowDemo:
         
         # 处理每个演示指令
         for i, instruction_data in enumerate(self.demo_instructions, 1):
-            print(f"📝 演示 {i}: {instruction_data['instruction']}")
+            print(f"演示 {i}: {instruction_data['instruction']}")
             print("=" * 60)
             
             try:
@@ -88,7 +88,7 @@ class UserInstructionFlowDemo:
                 self._display_result(result, instruction_data)
                 
             except Exception as e:
-                print(f"❌ 处理失败: {str(e)}")
+                print(f"处理失败: {str(e)}")
             
             print("\n" + "=" * 60 + "\n")
         
@@ -97,15 +97,15 @@ class UserInstructionFlowDemo:
     
     async def _initialize_components(self):
         """初始化组件"""
-        print("🔧 初始化组件...")
+        print("初始化组件...")
         
-        # 初始化追踪写入器
-        await self.trace_writer.initialize()
+        # 初始化追踪写入器（TraceWriter 无需 initialize）
+        # await self.trace_writer.initialize()
         
         # 初始化ACP客户端
         await self.acp_client.connect()
         
-        print("✅ 组件初始化完成\n")
+        print("组件初始化完成\n")
     
     async def _process_instruction_flow(self, instruction_data: dict) -> dict:
         """处理指令的完整流程"""
@@ -114,33 +114,33 @@ class UserInstructionFlowDemo:
         session_id = instruction_data["session_id"]
         priority = instruction_data["priority"]
         
-        print(f"1️⃣ 接收用户指令: {instruction}")
+        print(f"接收用户指令: {instruction}")
         
         # 步骤1: 创建或获取上下文
         context_id = await self._get_or_create_context(user_id, session_id)
-        print(f"2️⃣ 获取上下文: {context_id}")
+        print(f"获取上下文: {context_id}")
         
         # 步骤2: 分析指令意图
         intent_analysis = await self._analyze_intent(instruction)
-        print(f"3️⃣ 意图分析: {intent_analysis['intent_type']} (置信度: {intent_analysis['confidence']})")
+        print(f"意图分析: {intent_analysis['intent_type']} (置信度: {intent_analysis['confidence']})")
         
         # 步骤3: 确定目标Agent
         target_agent = await self._determine_target_agent(intent_analysis)
-        print(f"4️⃣ 目标Agent: {target_agent}")
+        print(f"目标Agent: {target_agent}")
         
         # 步骤4: 构建行为包
         behavior_package = await self._build_behavior_package(
             instruction, user_id, target_agent, context_id, intent_analysis, priority
         )
-        print(f"5️⃣ 构建行为包: {behavior_package.trace_id}")
+        print(f"构建行为包: {behavior_package.trace_id}")
         
         # 步骤5: 通过BIR路由器分发
         routing_result = await self._route_behavior(behavior_package)
-        print(f"6️⃣ 路由结果: {routing_result}")
+        print(f"路由结果: {routing_result}")
         
         # 步骤6: 发送到ACP客户端
         acp_result = await self._send_to_acp(behavior_package)
-        print(f"7️⃣ ACP发送: {'成功' if acp_result else '失败'}")
+        print(f"ACP发送: {'成功' if acp_result else '失败'}")
         
         return {
             "instruction": instruction,
@@ -245,7 +245,7 @@ class UserInstructionFlowDemo:
     
     def _display_result(self, result: dict, instruction_data: dict):
         """显示处理结果"""
-        print("\n📊 处理结果:")
+        print("\n处理结果:")
         print(f"   指令: {result['instruction']}")
         print(f"   上下文ID: {result['context_id']}")
         print(f"   意图类型: {result['intent_analysis']['intent_type']}")
@@ -253,19 +253,19 @@ class UserInstructionFlowDemo:
         print(f"   目标Agent: {result['target_agent']}")
         print(f"   追踪ID: {result['behavior_package'].trace_id}")
         print(f"   路由结果: {result['routing_result']}")
-        print(f"   ACP发送: {'✅ 成功' if result['acp_result'] else '❌ 失败'}")
+        print(f"   ACP发送: {'成功' if result['acp_result'] else '失败'}")
         
         # 验证意图分析是否正确
         expected_intent = instruction_data.get("expected_intent")
         actual_intent = result['intent_analysis']['intent_type']
         if expected_intent == actual_intent:
-            print(f"   ✅ 意图分析正确")
+            print(f"   意图分析正确")
         else:
-            print(f"   ❌ 意图分析错误 (期望: {expected_intent}, 实际: {actual_intent})")
+            print(f"   意图分析错误 (期望: {expected_intent}, 实际: {actual_intent})")
     
     async def _show_statistics(self):
         """显示统计信息"""
-        print("📈 处理统计:")
+        print("处理统计:")
         print(f"   总指令数: {len(self.demo_instructions)}")
         print(f"   上下文数: {len(self.context_manager)}")
         print(f"   追踪记录: {len(self.trace_writer.get_traces()) if hasattr(self.trace_writer, 'get_traces') else 'N/A'}")
