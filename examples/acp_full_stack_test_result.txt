@@ -1,0 +1,59 @@
+=== ACP协议全链路端到端测试 ===
+
+[1] 启动TraceWriter和ACPServer...
+2025-07-14 23:57:09,308 INFO server listening on 127.0.0.1:9002
+2025-07-14 23:57:09,309 INFO server listening on [::1]:9002
+2025-07-14 23:57:09,309 INFO ACP Server started on localhost:9002
+[1] ACPServer启动成功 (localhost:9002)
+[2] 启动ACPClient并连接...
+2025-07-14 23:57:09,310 INFO Connected to ACP server: ws://localhost:9002
+[2] ACPClient连接结果: 成功
+[3] 初始化ControlDispatcher和适配器...
+[3] ControlDispatcher和适配器注册完成
+[4] 发送API任务...
+2025-07-14 23:57:09,313 INFO [DISPATCH] acp_payload.data={'tool_name': 'api_test', 'arguments': {'endpoint': 'https://api.example.com/test', 'method': 'POST', 'params': {'key': 'value'}}, 'call_time': '2025-07-14T15:57:09.311848'}
+2025-07-14 23:57:09,313 INFO [DISPATCH] action_type=api_call, trace_id=None, context_id=None, timestamp=None
+2025-07-14 23:57:09,313 INFO [APIControlAdapter] match: action_type=api_call
+2025-07-14 23:57:09,313 INFO [DISPATCH] 尝试适配器: APIControlAdapter, match=True, action_type=api_call
+2025-07-14 23:57:09,313 INFO [APIControlAdapter] execute called with payload: ACPPayload(command_type='call_tool', action_type='api_call', data={'tool_name': 'api_test', 'arguments': {'endpoint': 'https://api.example.com/test', 'method': 'POST', 'params': {'key': 'value'}}, 'call_time': '2025-07-14T15:57:09.311848'}, parameters={}, metadata={})
+2025-07-14 23:57:09,313 INFO [APIControlAdapter] api_result: {'endpoint': '', 'method': 'POST', 'params': {}, 'response': {'status': 'success', 'data': 'API调用成功'}}
+[4] API适配器分发结果: success
+[4] API适配器输出: {'endpoint': '', 'method': 'POST', 'params': {}, 'response': {'status': 'success', 'data': 'API调用成功'}}
+2025-07-14 23:57:09,314 INFO Sent ACPMessage: trace_api
+[4] API任务发送到服务端: 成功
+[4] 发送TOOL任务...
+2025-07-14 23:57:09,825 INFO [DISPATCH] acp_payload.data={'tool_name': 'text_processor', 'arguments': {'text': 'Hello, ACP!'}, 'call_time': '2025-07-14T15:57:09.311848'}
+2025-07-14 23:57:09,825 INFO [DISPATCH] action_type=tool_exec, trace_id=None, context_id=None, timestamp=None
+2025-07-14 23:57:09,825 INFO [APIControlAdapter] match: action_type=tool_exec
+2025-07-14 23:57:09,826 INFO [DISPATCH] 尝试适配器: APIControlAdapter, match=False, action_type=tool_exec
+2025-07-14 23:57:09,826 INFO [ToolControlAdapter] match: action_type=tool_exec
+2025-07-14 23:57:09,826 INFO [DISPATCH] 尝试适配器: ToolControlAdapter, match=True, action_type=tool_exec
+2025-07-14 23:57:09,826 INFO [ToolControlAdapter] execute called with payload: ACPPayload(command_type='call_tool', action_type='tool_exec', data={'tool_name': 'text_processor', 'arguments': {'text': 'Hello, ACP!'}, 'call_time': '2025-07-14T15:57:09.311848'}, parameters={}, metadata={})
+2025-07-14 23:57:09,826 ERROR 工具执行失败: 工具 text_processor 未注册
+[4] TOOL适配器分发结果: error
+[4] TOOL适配器输出: {}
+2025-07-14 23:57:09,828 INFO Sent ACPMessage: trace_tool
+[4] TOOL任务发送到服务端: 成功
+[4] 发送MODEL任务...
+2025-07-14 23:57:10,343 INFO [DISPATCH] acp_payload.data={'tool_name': 'gpt-4', 'arguments': {'prompt': '请生成一个关于ACP协议的简短描述'}, 'call_time': '2025-07-14T15:57:09.311848'}
+2025-07-14 23:57:10,343 INFO [DISPATCH] action_type=model_call, trace_id=None, context_id=None, timestamp=None
+2025-07-14 23:57:10,343 INFO [APIControlAdapter] match: action_type=model_call
+2025-07-14 23:57:10,344 INFO [DISPATCH] 尝试适配器: APIControlAdapter, match=False, action_type=model_call
+2025-07-14 23:57:10,344 INFO [ToolControlAdapter] match: action_type=model_call
+2025-07-14 23:57:10,344 INFO [DISPATCH] 尝试适配器: ToolControlAdapter, match=False, action_type=model_call
+2025-07-14 23:57:10,344 INFO [ModelControlAdapter] match: action_type=model_call
+2025-07-14 23:57:10,344 INFO [DISPATCH] 尝试适配器: ModelControlAdapter, match=True, action_type=model_call
+2025-07-14 23:57:10,344 INFO [ModelControlAdapter] execute called with payload: ACPPayload(command_type='call_tool', action_type='model_call', data={'tool_name': 'gpt-4', 'arguments': {'prompt': '请生成一个关于ACP协议的简短描述'}, 'call_time': '2025-07-14T15:57:09.311848'}, parameters={}, metadata={})
+2025-07-14 23:57:10,344 INFO [ModelControlAdapter] model_result: {'model_id': 'gpt-4', 'prompt': '', 'response': '模型 gpt-4 的响应: ...'}
+[4] MODEL适配器分发结果: success
+[4] MODEL适配器输出: {'model_id': 'gpt-4', 'prompt': '', 'response': '模型 gpt-4 的响应: ...'}
+2025-07-14 23:57:10,344 INFO Sent ACPMessage: trace_model
+[4] MODEL任务发送到服务端: 成功
+[5] 输出trace链路:
+--- trace_id=trace_api ---
+  [1752508629] acp_message | ACP client_send | data={'message_type': 'client_send', 'payload': {'meta': {'message_id': '9df0886b-4061-45b0-ae66-9afe1b6e67f0', 'message_type': 'execute', 'timestamp': '2025-07-14T15:57:09.311848', 'sender_id': 'test_client', 'receiver_id': 'test_agent', 'trace_id': 'trace_api', 'correlation_id': None, 'reply_to': None, 'priority': 2, 'ttl': None, 'retry_count': 0, 'max_retries': 3}, 'context': {'session_id': 'ctx_api', 'tenant_id': None, 'user_id': None, 'agent_capabilities': [], 'environment': {}, 'security_context': {}}, 'payload': {'command_type': 'call_tool', 'action_type': 'api_call', 'data': {'tool_name': 'api_test', 'arguments': {'endpoint': 'https://api.example.com/test', 'method': 'POST', 'params': {'key': 'value'}}, 'call_time': '2025-07-14T15:57:09.311848'}, 'parameters': {}, 'metadata': {}}}}
+--- trace_id=trace_tool ---
+  [1752508629] acp_message | ACP client_send | data={'message_type': 'client_send', 'payload': {'meta': {'message_id': '3fbb142c-0aa0-4aca-b04f-b080efe62a46', 'message_type': 'execute', 'timestamp': '2025-07-14T15:57:09.311848', 'sender_id': 'test_client', 'receiver_id': 'test_agent', 'trace_id': 'trace_tool', 'correlation_id': None, 'reply_to': None, 'priority': 2, 'ttl': None, 'retry_count': 0, 'max_retries': 3}, 'context': {'session_id': 'ctx_tool', 'tenant_id': None, 'user_id': None, 'agent_capabilities': [], 'environment': {}, 'security_context': {}}, 'payload': {'command_type': 'call_tool', 'action_type': 'tool_exec', 'data': {'tool_name': 'text_processor', 'arguments': {'text': 'Hello, ACP!'}, 'call_time': '2025-07-14T15:57:09.311848'}, 'parameters': {}, 'metadata': {}}}}
+--- trace_id=trace_model ---
+  [1752508630] acp_message | ACP client_send | data={'message_type': 'client_send', 'payload': {'meta': {'message_id': '8ce02295-702d-478f-accf-05baccb9d9a3', 'message_type': 'execute', 'timestamp': '2025-07-14T15:57:09.311848', 'sender_id': 'test_client', 'receiver_id': 'test_agent', 'trace_id': 'trace_model', 'correlation_id': None, 'reply_to': None, 'priority': 2, 'ttl': None, 'retry_count': 0, 'max_retries': 3}, 'context': {'session_id': 'ctx_model', 'tenant_id': None, 'user_id': None, 'agent_capabilities': [], 'environment': {}, 'security_context': {}}, 'payload': {'command_type': 'call_tool', 'action_type': 'model_call', 'data': {'tool_name': 'gpt-4', 'arguments': {'prompt': '请生成一个关于ACP协议的简短描述'}, 'call_time': '2025-07-14T15:57:09.311848'}, 'parameters': {}, 'metadata': {}}}}
+2025-07-14 23:57:10,859 INFO Disconnected from ACP server
