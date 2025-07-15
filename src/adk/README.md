@@ -126,3 +126,64 @@ print(result)
 ADK开发包将企业级多智能体系统的核心能力抽象为易用、可扩展的开发接口。业务开发者只需专注于“注册Agent/任务→调度→回调→状态”，无需关心底层细节。推荐先在 `src/adk/` 下实现上述核心模块，逐步将现有能力抽象进来。
 
 如需具体代码骨架/模板，或要将现有某个模块抽象进ADK包，请联系架构师或核心开发团队。
+
+## Graph Engine（推理流/状态机/流程图）能力
+
+- 已将原 src/graph_engine/ 下的所有能力集成到 adk.graph_engine.* 下，业务层可直接通过 adk.graph_engine.node、adk.graph_engine.edge、adk.graph_engine.state、adk.graph_engine.graph 等模块调用。
+- 支持节点-边-状态-图的推理流、分支、回环、终止、trace、快照、diff、replay等。
+- 推荐业务层统一通过 adk.graph_engine 进行流程编排和推理流控制，便于后续维护和升级。
+
+## LangGraph 推理流/状态机能力
+
+- 已集成 LangGraph（业界主流图结构推理流框架），可通过 `adk.langgraph_engine` 进行节点-边-状态-图的推理流编排。
+- 支持自定义节点函数、条件分支、回环、终止节点、全链路trace等。
+- 推荐业务层统一通过 `adk.langgraph_engine.StateGraph` 进行流程图式智能体推理流控制。
+
+### 快速上手示例
+
+```python
+from adk.langgraph_engine import StateGraph
+
+def reasoner_node(state):
+    # 决策逻辑
+    ...
+    return state
+
+def tool_node(state):
+    # 工具执行逻辑
+    ...
+    return state
+
+g = StateGraph()
+g.add_node("reasoner", reasoner_node)
+g.add_node("tool", tool_node)
+g.add_edge("reasoner", "tool")
+g.set_entry("reasoner")
+
+result = g.run(initial_state)
+print(result)
+```
+
+## PromptManager（提示词模板管理）
+
+- 支持多类型、多版本、多Agent/多场景的提示词模板注册、查找、渲染、标签管理。
+- 支持Jinja2风格参数化渲染，便于上下文注入。
+- 业务层可通过`adk.prompt_manager`一站式调用。
+
+### 快速上手示例
+
+```python
+from adk.prompt_manager import prompt_manager
+
+# 注册模板
+tpl = """你是一个助手，请用{{ lang }}回答：{{ question }}"""
+prompt_manager.register_template("qa", tpl, version="v1", meta={"scene": "qa"})
+
+# 渲染模板
+context = {"lang": "中文", "question": "什么是LangGraph？"}
+prompt = prompt_manager.render_template("qa", context, version="v1")
+print(prompt)
+
+# 列出所有模板
+print(prompt_manager.list_templates())
+```
